@@ -4,6 +4,8 @@ import './App.css';
 import {MessageProvider} from './message/index'
 import ConfigProdiver from './message/ConfigProdiver';
 import Closure from './react-closure';
+import Calendar from './Calender';
+import dayjs from 'dayjs';
 function App() {
 
   // const messageContext = useContext(ConfigContext)
@@ -16,7 +18,10 @@ function App() {
      </ConfigProdiver>
     </div> */}
 
-    <Closure></Closure>
+    {/* <Closure></Closure> */}
+
+
+    <Calendar value={dayjs('2024-08-17')}></Calendar>
     </>
   );
 }
