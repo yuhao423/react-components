@@ -21,6 +21,4 @@ import 是 webpack 异步加载模块的，用到了promise，这里先展示loa
 
 
 2. 单独使用：
-`Suspense`的底层原理是**捕获**（catch捕获）的 promise，然后 React 会捕获这个promise ，交给最近的`Suspense`组件来处理。只要 throw 一个 promise，就会被最近的 Suspense 捕获。
-
-promise 初始状态展示 fallback，promise 改变状态后展示子组件。
+`Suspense`的底层原理是**捕获**（catch捕获）的 promise，然后 React 会捕获这个promise ，交给最近的`Suspense`组件来处理。只要 throw 一个 promise，就会被最近的 Suspense 捕获。promise 初始状态展示 fallback，promise 改变状态后展示子组件。

@@ -1,0 +1,14 @@
+#box1,#box2 {
+    width: 100px;
+    height: 100px;
+    background: blue;
+    color: #fff;
+
+    position: relative;
+}
+#box1 {
+    top: 500px;
+}
+#box2 {
+    top: 800px;
+}

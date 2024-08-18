@@ -7,6 +7,7 @@ import Closure from './react-closure';
 import Calendar from './Calender';
 import dayjs from 'dayjs';
 import { SuspenseTest } from './Suspense';
+import { ReactLazyLoad } from './Lazyload';
 function App() {
 
   // const messageContext = useContext(ConfigContext)
@@ -37,9 +38,10 @@ function App() {
       }}
     ></Calendar> */}
 
-    <SuspenseTest></SuspenseTest>
+    {/* <SuspenseTest></SuspenseTest> */}
 
 
+    <ReactLazyLoad></ReactLazyLoad>
     </>
   );
 }
