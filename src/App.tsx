@@ -21,7 +21,20 @@ function App() {
     {/* <Closure></Closure> */}
 
 
-    <Calendar value={dayjs('2024-08-17')}></Calendar>
+    <Calendar value={dayjs('2024-08-17')} className='sbrebeb' style={{width:'600px'}}
+      // dateRender={(value)=>{
+      //   return <div>{value.format('DD/MM/YYYY')}</div>;
+      // }}
+      dateInnerContent={(value)=>{
+        return <div style={{fontSize:'10px'}}>农历slot</div>
+      }}
+
+      onChange={(value)=>{
+        // alert(value)
+        console.log(value);
+        
+      }}
+    ></Calendar>
     </>
   );
 }

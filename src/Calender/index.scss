@@ -27,16 +27,44 @@
 
         &-row{
             display: flex;
-            height: 100px;
+            // height: 100px;
         }
 
         &-cell{
             flex:1;
             border:1px solid #eee;
-            padding: 10px;
+            // padding: 10px;
             color: #ccc;
+            overflow: hidden;
             &-current{
                 color: black;
+            }
+
+
+            &-date{
+                padding: 20px;
+                &-value{
+                    &-today{
+                        background: red !important;
+                        width: 28px;
+                        height: 28px;
+                        line-height: 28px;
+                        text-align: center;
+                        color: #fff;
+                        border-radius: 50%;
+                        cursor: pointer;
+                    }
+                    &-selected{
+                        background: blue;
+                        width: 28px;
+                        height: 28px;
+                        line-height: 28px;
+                        text-align: center;
+                        color: #fff;
+                        border-radius: 50%;
+                        cursor: pointer;
+                    }
+                }
             }
         }
     }
