@@ -1,0 +1,29 @@
+
+.yu-waterfall{
+
+    &-wrapper{
+        height: 600px;
+        width: 800px;
+        border: 1px solid #ccc;
+        margin: 100px auto;
+    }
+
+    &-container{
+        overflow-y: scroll;
+        overflow-x: hidden;
+        width: 100%;
+        height: 100%;
+    }
+
+    &-list{
+        position: relative;
+        width: 100%;
+    }
+
+    &-item{
+        position: absolute;
+        left: 0;
+        top:0;
+        box-sizing: border-box;
+    }
+}

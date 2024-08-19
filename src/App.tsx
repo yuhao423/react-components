@@ -8,6 +8,9 @@ import Calendar from './Calender';
 import dayjs from 'dayjs';
 import { SuspenseTest } from './Suspense';
 import { ReactLazyLoad } from './Lazyload';
+import { VisturalList } from './visturalList';
+import { WaterFall } from './WaterFall';
+
 function App() {
 
   // const messageContext = useContext(ConfigContext)
@@ -41,7 +44,18 @@ function App() {
     {/* <SuspenseTest></SuspenseTest> */}
 
 
-    <ReactLazyLoad></ReactLazyLoad>
+    {/* <ReactLazyLoad></ReactLazyLoad> */}
+
+    {/* <VisturalList></VisturalList> */}
+
+    <WaterFall request={(page,pageSize)=>{
+        return new Promise((resolve,reject)=>{
+            setTimeout(()=>{
+              const data = [{id:'ssss',width:100,height:10,url:'xxxx'}]
+              resolve(data)
+            },1000)
+        })
+    }}></WaterFall>
     </>
   );
 }
