@@ -77,13 +77,16 @@ export const WaterFall = (props:WaterFallProps) => {
             return 
 
         }
+       const {newPostion,newCloumnHeight} = computedCardPos(data,carWidth)
         //获取数据，获取后端返回的数据
         setWaterfallState((prev)=>{
             return {
                 ...prev,
                 page:nextPage,
                 carWith:carWidth,
-                carList:[...prev.carList,...data]
+                carList:[...prev.carList,...data],
+                carPosition:newPostion,
+                cloumnHeight:newCloumnHeight
             }
         })
         // console.log(waterfallState,'waterfallStatewaterfallState');
@@ -96,28 +99,18 @@ export const WaterFall = (props:WaterFallProps) => {
     }
 
     //根据请求的数据计算卡片位置
-    const computedCardPos = (list:ICardItem[])=>{
+    const computedCardPos = (list:ICardItem[],carWith:number)=>{
         console.log(list,'list');
-        
+        let newCloumnHeight = [...waterfallState.cloumnHeight]
+        let newPostion = [...waterfallState.carPosition]
         list.forEach((item,index)=>{
             //计算高度
-            console.log(item.height,item.width ,waterfallState.carWith,'sb');
+            console.log(item.height,item.width ,carWith,'sb');
             
-            const cardHeight = Math.floor((item.height * waterfallState.carWith  ) / item.width)
-
-            let newCloumnHeight = [...waterfallState.cloumnHeight]
-            let newPostion = [...waterfallState.carPosition]
-            if(index <= cloumn){
+            const cardHeight = Math.floor((item.height * carWith  ) / item.width)
+            if(index < cloumn){
                 console.log('我进来了吗',cardHeight);
                 
-                //vue 的写法：
-                // waterfallState.carPosition.push({
-                //     width:waterfallState.carWith,
-                //     height:cardHeight,
-                //     x:index ? index * (waterfallState.carWith + gap) : 0,
-                //     y:0
-                // })
-
                 //记录瀑布流每一列的高度
                 //vue 的写法： waterfallState.cloumnHeight[index] = cardHeight + gap
 
@@ -126,11 +119,11 @@ export const WaterFall = (props:WaterFallProps) => {
                 console.log(newCloumnHeight,'newCloumnHeight');
                 // const postion = [...waterfallState.carPosition]
                 newPostion.push({
-                    width:waterfallState.carWith || 382,
+                    width:carWith,
                     // width:382,
                     height:cardHeight,
                     // x:index ? index * (waterfallState.carWith + gap) : 0,
-                    x:index ? index * (waterfallState.carWith + gap) : 0,
+                    x:index ? index * (carWith + gap) : 0,
                     y:0
                 })
                 console.log(newPostion,'newPostion');
@@ -141,10 +134,18 @@ export const WaterFall = (props:WaterFallProps) => {
             }else{
 
                 const {minIndex,minHeight} = minColunmHeight
-
-                const newCloumnHeight = [...waterfallState.cloumnHeight]
+                console.log(minIndex,minHeight,'ok');
+                
+                // newCloumnHeight = [...waterfallState.cloumnHeight]
 
                 newCloumnHeight[index] = newCloumnHeight[index] + cardHeight + gap
+
+                newPostion.push({
+                    width:carWith,
+                    height:cardHeight,
+                    x:minIndex ? minIndex * (carWith + gap) : 0,
+                    y:minHeight
+                })
 
                 // setWaterfallState((prev)=>{
                 //    return {
@@ -162,16 +163,11 @@ export const WaterFall = (props:WaterFallProps) => {
 
             }
 
-            setWaterfallState((prev)=>{
-                    return {
-                        ...prev,
-                        //修改carPosition
-                        carPosition:newPostion,
-                        cloumnHeight:newCloumnHeight
-                    }
-                })
         })
-
+             return {
+                newPostion,
+                newCloumnHeight
+            }
     }
 
     //计算最小列高度
@@ -180,7 +176,7 @@ export const WaterFall = (props:WaterFallProps) => {
         let minIndex = -1
         let minHeight = Infinity
 
-        //循环找到最小的index 和 高度
+        //循环找到最小的 index 和 高度
         waterfallState.cloumnHeight.forEach((item,index)=>{
             if(item < minHeight){
                 minIndex = index
@@ -188,6 +184,8 @@ export const WaterFall = (props:WaterFallProps) => {
             }
         })
 
+        console.log(minIndex,minHeight,'yuyusbsb');
+        
             return {
                 minIndex,
                 minHeight
@@ -236,23 +234,23 @@ export const WaterFall = (props:WaterFallProps) => {
         init()
     },[])
 
-    useEffect(()=>{
-        if (waterfallState.carList.length > 0) {
-            console.log('uyyuyuuy');
+    // useEffect(()=>{
+    //     if (waterfallState.carList.length > 0) {
+    //         console.log('uyyuyuuy');
             
-            computedCardPos(waterfallState.carList);
-        }
-    },[waterfallState.carList])
+    //         computedCardPos(waterfallState.carList);
+    //     }
+    // },[waterfallState.carList])
 
     return (
         <div className="yu-waterfall-wrapper">
             <div className="yu-waterfall-container" ref={containerRef}>
                 <div className="yu-waterfall-list">
                     {waterfallState.carList.map((item,index)=>{
-                        console.log(item,index,waterfallState.carPosition[index],'weuhrfe');
+                        console.log(item,index,waterfallState.carPosition[index].width,'weuhrfe');
                         return (
-                            // <div key={item.id} className="yu-waterfall-item" style={{width:`${waterfallState.carPosition[index].width}px`,height:`${waterfallState.carPosition[index].height}px`}}>{item.url}</div>
-                            <div key={item.id}>{}</div>
+                            <div key={item.id} className="yu-waterfall-item" style={{width:`${waterfallState.carPosition[index].width}px`,height:`${waterfallState.carPosition[index].height}px`,transform: `translate3d(${waterfallState.carPosition[index].x}px, ${waterfallState.carPosition[index].y}px, 0)`}}>{item.url}</div>
+                            // <div key={item.id}>{}</div>
                         )
                     })}
                     {/* <div className="yu-waterfall-item"></div> */}

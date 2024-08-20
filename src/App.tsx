@@ -51,7 +51,7 @@ function App() {
     <WaterFall request={(page,pageSize)=>{
         return new Promise((resolve,reject)=>{
             setTimeout(()=>{
-              const data = [{id:'ssss',width:100,height:10,url:'xxxx'}]
+              const data = [{id:'ssss',width:100,height:10,url:'xxxx'},{id:'ssss',width:80,height:20,url:'xxxxwefe'},{id:'sssss3cf',width:90,height:50,url:'yu'}]
               resolve(data)
             },1000)
         })
