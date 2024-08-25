@@ -48,7 +48,9 @@ function App() {
     })
 
   }
+  const onLoad = ()=>{
 
+  }
   return (
     <>
       {/* <div>
@@ -83,11 +85,15 @@ function App() {
 
       {/* <VisturalList></VisturalList> */}
 
-      <WaterFall request={request} pageSize={20} renderItem={(item,index)=>{
+      <WaterFall request={request} pageSize={10} cloumn={3} renderItem={(item,index)=>{
+        // colorArr[index % (colorArr.length - 1)]
         return (
-          <div style={{background:colorArr[index % (colorArr.length - 1)],width:'100%',height:'100%',borderRadius:"10px"}} key={index}>
-              33
+          <div style={{background:'#f7f7f7',width:'100%',height:'100%',borderRadius:"10px"}} key={index}>
+            {
+             <img src={`https://picsum.photos/200/300?${index}`} style={{width:'100%',height:'100%',borderRadius:'20px'}}></img>
+            }
           </div>
+          // <img onLoad={onLoad} src={`https://picsum.photos/200/300?${index}`} style={{width:'100%',height:'100%',borderRadius:'20px'}}></img>
         )
       }}></WaterFall>
     </>

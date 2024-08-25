@@ -1,48 +1,49 @@
 
+import React from 'react'
 import { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import './index.scss'
-
+import throttle from './utils/throttle'
 
 export interface WaterFallProps {
     cloumn?: number,
     gap?: number,
     //触底距离多久加载
-    bottom?:number | string,
+    bottom?: number | string,
 
-    pageSize?:number,
-    request:(page:number,pageSize:number)=>Promise<ICardItem[]>,
+    pageSize?: number,
+    request: (page: number, pageSize: number) => Promise<ICardItem[]>,
     // children:ReactNode
-    renderItem:(item:ICardItem,index:number)=>ReactNode
+    renderItem: (item: ICardItem, index: number) => ReactNode
 }
 
 
 //每一个卡片的props
 
-export interface ICardItem{
-    id:string,
-    width:number,
-    height:number,
-    url:string,
+export interface ICardItem {
+    id: string,
+    width: number,
+    height: number,
+    url: string,
 
-    [key:string]:any
+    [key: string]: any
 }
 
 
 //单个卡片的位置信息，及样式
 export interface ICardPositon {
-    x:number,
-    y:number,
-    width:number,
-    height:number
+    x: number,
+    y: number,
+    width: number,
+    height: number
 }
 
 
 
-export const WaterFall = (props:WaterFallProps) => {
+export const WaterFall = (props: WaterFallProps) => {
 
     const {
         cloumn = 2,
-        gap = 10 ,
+        gap = 10,
         bottom = 10,
         pageSize = 20,
         // children,
@@ -50,172 +51,201 @@ export const WaterFall = (props:WaterFallProps) => {
         request
     } = props
 
-    const containerRef = useRef<HTMLDivElement | null> (null)
+    const containerRef = useRef<HTMLDivElement | null>(null)
 
-    const [loadingBottom,setLoadingBottom] =useState(false)
-    const [waterfallState,setWaterfallState] = useState({
-            is_finished:false,
-            page:1,
-            //每个卡片的宽度
-            carWith:0,
-            carList:[] as ICardItem[],
-            carPosition:[] as ICardPositon[],
-            //高度
-            cloumnHeight:new Array(cloumn).fill(0) as number[],
-            loadingBottom:false,
-    // }
+    // const [loadingBottom,setLoadingBottom] =useState(false)
+    const [waterfallState, setWaterfallState] = useState({
+        is_finished: false,
+        page: 1,
+        //每个卡片的宽度
+        carWith: 0,
+        carList: [] as ICardItem[],
+        carPosition: [] as ICardPositon[],
+        //高度
+        cloumnHeight: new Array(cloumn).fill(0) as number[],
+        loadingBottom: false,
+        // }
     })
-    const fetchData = async ()=>{
+    const fetchData = async () => {
         //是否还有数据
-        
-        setLoadingBottom(true)
-        
-        if(waterfallState.is_finished) return 
 
-        const data = await request(waterfallState.page,pageSize)
-        console.log(data,waterfallState.page,'data');
-        
-        const carWidth = getCarWidth() as number
+        // setLoadingBottom(true)
+
+
+        if (waterfallState.is_finished) return
+        // const {carWidth,clientWidth} = getCarWidth() as any
+
+        //加入loading 
+        if (waterfallState.page !== 1) {
+            console.log('你什么意思？');
+
+            // setWaterfallState((prev) => {
+            //     return {
+            //         ...prev,
+            //         loadingBottom: true,
+            //         // carWith:carWidth,
+            //         carList: [...prev.carList, ...[{ id: 'loading', width: 200, height: 20, url: "loading" }]],
+            //         carPosition: [...prev.carPosition, ...[{ width: 200, height: 20, x: containerRef.current?.clientWidth! / 2, y: Math.max(...prev.cloumnHeight) }]]
+            //     }
+
+            // })
+
+            setWaterfallState((prev)=>{
+                return {
+                    ...prev,
+                    loadingBottom:true
+                }
+            })
+        }
+
+        const data = await request(waterfallState.page, pageSize)
+        console.log(data, waterfallState.page, 'data');
+
         // const carWidth = testGetCarWidth
+        const carWidth = getCarWidth() as number
+        console.log(carWidth, 'carWidth');
 
-        console.log(carWidth,'carWidth');
-        
         let nextPage = waterfallState.page
         nextPage++;
 
-        if(!data.length){
-            console.log('我执行了吗？');  
+        if (!data.length) {
+            console.log('我执行了吗？');
             // waterfallState.is_finished = true
-            return 
+            return
 
         }
 
-        setLoadingBottom(false)
-
-
-        const newData = [...waterfallState.carList,...data]
-       const {newPostion,newCloumnHeight} = computedCardPos(data,carWidth)
-        //获取数据，获取后端返回的数据
+        // setLoadingBottom(false)
         setWaterfallState((prev)=>{
             return {
                 ...prev,
-                page:nextPage,
-                carWith:carWidth,
-                carList:[...prev.carList,...data],
-                carPosition:newPostion,
-                cloumnHeight:newCloumnHeight
+                loadingBottom:false
             }
         })
-        
+
+        const newData = [...waterfallState.carList, ...data]
+        const { newPostion, newCloumnHeight } = computedCardPos(data, carWidth)
+        //获取数据，获取后端返回的数据
+        setWaterfallState((prev) => {
+            return {
+                ...prev,
+                page: nextPage,
+                carWith: carWidth,
+                carList: [...prev.carList, ...data],
+                carPosition: newPostion,
+                cloumnHeight: newCloumnHeight
+            }
+        })
+
     }
 
     //根据请求的数据计算卡片位置
-    const computedCardPos = (list:ICardItem[],carWith:number)=>{
-        console.log(list,'list');
+    const computedCardPos = (list: ICardItem[], carWith: number) => {
+        console.log(list, 'list');
         let newCloumnHeight = [...waterfallState.cloumnHeight]
-        
+
 
         let newPostion = [...waterfallState.carPosition]
-        list.forEach((item,index)=>{
+        list.forEach((item, index) => {
             //计算高度
-            console.log(item.height,item.width ,carWith,'sb');
-            
-            const cardHeight = Math.floor((item.height * carWith  ) / item.width)
-               
-            if(index < cloumn &&  waterfallState.carList.length < pageSize){
-                console.log('我进来了吗',cardHeight);
-           
+            console.log(item.height, item.width, carWith, 'sb');
+
+            const cardHeight = Math.floor((item.height * carWith) / item.width)
+
+            if (index < cloumn && waterfallState.carList.length < pageSize) {
+                console.log('我进来了吗', cardHeight);
+
                 console.log('Y______________________________________________________________________');
-                
+
 
                 //记录瀑布流每一列的高度
                 //vue 的写法： waterfallState.cloumnHeight[index] = cardHeight + gap
 
                 newCloumnHeight[index] = cardHeight + gap
 
-                console.log(newCloumnHeight,'newCloumnHeight');
+                console.log(newCloumnHeight, 'newCloumnHeight');
                 // const postion = [...waterfallState.carPosition]
                 newPostion.push({
-                    width:carWith,
+                    width: carWith,
                     // width:382,
-                    height:cardHeight,
+                    height: cardHeight,
                     // x:index ? index * (waterfallState.carWith + gap) : 0,
-                    x:index ? index * (carWith + gap) : 0,
-                    y:0
+                    x: index ? index * (carWith + gap) : 0,
+                    y: 0
                 })
-                console.log(newPostion,'newPostion');
-                
-            }else{
+                console.log(newPostion, 'newPostion');
 
-                const {minHeight,minIndex}  = testMinColunmHeight(newCloumnHeight)
+            } else {
+
+                const { minHeight, minIndex } = testMinColunmHeight(newCloumnHeight)
                 newCloumnHeight[minIndex] += cardHeight + gap
-                console.log(minHeight,minIndex,newCloumnHeight,cardHeight,'2323sffwef');
-                
+                console.log(minHeight, minIndex, newCloumnHeight, cardHeight, '2323sffwef');
+
                 newPostion.push({
-                    width:carWith,
-                    height:cardHeight,
-                    x:minIndex ? minIndex * (carWith + gap) : 0,
-                    y:minHeight
+                    width: carWith,
+                    height: cardHeight,
+                    x: minIndex ? minIndex * (carWith + gap) : 0,
+                    y: minHeight
                 })
 
             }
         })
-             return {
-                newPostion,
-                newCloumnHeight
-            }
+        return {
+            newPostion,
+            newCloumnHeight
+        }
     }
 
     //计算最小列高度
 
-    const minColunmHeight = useMemo(()=>{
+    const minColunmHeight = useMemo(() => {
         let minIndex = -1
         let minHeight = Infinity
 
         //循环找到最小的 index 和 高度
-        waterfallState.cloumnHeight.forEach((item,index)=>{
-            if(item < minHeight){
+        waterfallState.cloumnHeight.forEach((item, index) => {
+            if (item < minHeight) {
                 minIndex = index
                 minHeight = item
             }
         })
 
-        console.log(minIndex,minHeight,'yuyusbsb');
-        
-            return {
-                minIndex,
-                minHeight
+        console.log(minIndex, minHeight, 'yuyusbsb');
 
-            }        
-    },[waterfallState.cloumnHeight])
+        return {
+            minIndex,
+            minHeight
 
-    const testMinColunmHeight = (cloumnHeight:any[])=>{
-        console.log(cloumnHeight,'cloumnHeightcloumnHeightcloumnHeight-cloumnHeight');
-        
+        }
+    }, [waterfallState.cloumnHeight])
+
+    const testMinColunmHeight = (cloumnHeight: any[]) => {
+        console.log(cloumnHeight, 'cloumnHeightcloumnHeightcloumnHeight-cloumnHeight');
+
         let minIndex = -1
         let minHeight = Infinity
 
         //循环找到最小的 index 和 高度
-        cloumnHeight.forEach((item,index)=>{
-            if(item < minHeight){
+        cloumnHeight.forEach((item, index) => {
+            if (item < minHeight) {
                 minIndex = index
                 minHeight = item
             }
         })
 
-        console.log(minIndex,minHeight,'yuyusbsb');
-        
-            return {
-                minIndex,
-                minHeight
+        console.log(minIndex, minHeight, 'yuyusbsb');
 
-            }  
+        return {
+            minIndex,
+            minHeight
+
+        }
     }
 
     // const testGetCarWidth = useMemo(()=>{
     //     const clientWidth = containerRef.current?.clientWidth
     //     console.log(clientWidth,'wei');
-        
+
     //     if(clientWidth){
     //         //每一个卡片的宽度
     //         const carWith = (  clientWidth - (  gap *  cloumn! - 1 ) ) / cloumn
@@ -226,72 +256,55 @@ export const WaterFall = (props:WaterFallProps) => {
     //     return 0
     // },[])
 
-    const getCarWidth = ()=>{
+    const getCarWidth = () => {
         const clientWidth = containerRef.current?.clientWidth
         console.log(clientWidth);
-        
-        if(clientWidth){
+
+        if (clientWidth) {
             //每一个卡片的宽度
-            const carWith = (  clientWidth - (  gap *  cloumn! - 1 ) ) / cloumn
+            const carWith = (clientWidth - (gap * cloumn! - 1)) / cloumn
 
             console.log(carWith);
             return carWith
         }
 
+        // return 0
     }
 
 
 
 
-    const init = ()=>{
-   
+    const init = () => {
+
         fetchData()
-        
+
     }
 
 
 
-    const handleOnScroll = ()=>{
+    const handleOnScroll = throttle(() => {
         console.log('3');
-        const {scrollTop,clientHeight,scrollHeight}= containerRef.current!
+        const { scrollTop, clientHeight, scrollHeight } = containerRef.current!
 
         //触底的条件
         const bottomDis = scrollHeight - clientHeight - scrollTop
 
-        if(bottomDis <= bottom){
+        if (bottomDis <= bottom  && !waterfallState.loadingBottom) {
             console.log('yu323****');
-            
+
             fetchData()
         }
 
-        // fetchData()
-        // console.log(scrollTop,clientHeight,scrollHeight);
-    }
-    // const a = (fn,time)=>{
-    //     let timer: any = null
+    },200)
 
-    //     return function (...arg: any){
-    //         if(timer){
-    //             return 
-    //         }
-    //         let ctx = this
-    //         timer = setInterval(()=>{
-    //             fn.apply(ctx,arg)
-    //             timer  = null
-    //         },time || 0)
-
-            
-    //     }
-    // }
-
-    useEffect(()=>{
+    useEffect(() => {
         init()
-    },[])
+    }, [])
 
     // useEffect(()=>{
     //     if (waterfallState.carList.length > 0) {
     //         console.log('uyyuyuuy');
-            
+
     //         computedCardPos(waterfallState.carList);
     //     }
     // },[waterfallState.carList])
@@ -301,23 +314,23 @@ export const WaterFall = (props:WaterFallProps) => {
             <div className="yu-waterfall-container" ref={containerRef} onScroll={handleOnScroll}>
                 <div className="yu-waterfall-list">
                     {waterfallState.carList.map((item,index)=>{
-                        // console.log(item,index,waterfallState.carPosition[index].width,'weuhrfe');
-                        // console.log(waterfallState.cloumnHeight);
-                        
+
                         return (
-                            <>
-                            <div key={item.id} className="yu-waterfall-item" style={{width:`${waterfallState.carPosition[index].width}px`,height:`${waterfallState.carPosition[index].height}px`,transform: `translate3d(${waterfallState.carPosition[index].x}px, ${waterfallState.carPosition[index].y}px, 0)`}}>
+                          
+                            <div key={item.id} className="yu-waterfall-item" style={{width:`${waterfallState.carPosition[index]?.width}px`,height:`${waterfallState.carPosition[index]?.height}px`,transform: `translate3d(${waterfallState.carPosition[index]?.x}px, ${waterfallState.carPosition[index]?.y}px, 0)`}}>
                                 {renderItem(item,index)}
 
                                
                             </div>
-                            
-                            {/* <div>sb</div> */}
-                            </>
+                        
                         )
                     })}
+                    {waterfallState.loadingBottom && (
+                        <div style={{width:'200px',height:`20px`,transform: `translate3d(${ containerRef.current?.clientWidth! / 2}px, ${Math.max(...waterfallState.cloumnHeight)}px, 0)`}}>loading...</div>
+                    )}
+                   
                     {/* <div className="yu-waterfall-item"></div> */}
-                    {loadingBottom  && waterfallState.page !== 1 ? <div style={{width:'200px',height:`20px`,transform: `translate3d(${ containerRef.current?.clientWidth! / 2}px, ${Math.max(...waterfallState.cloumnHeight)}px, 0)`}}>loading...</div> : ''}
+                    {/* {loadingBottom  && waterfallState.page !== 1 ? <div style={{width:'200px',height:`20px`,transform: `translate3d(${ containerRef.current?.clientWidth! / 2}px, ${Math.max(...waterfallState.cloumnHeight)}px, 0)`}}>loading...</div> : ''} */}
                 </div>
             </div>
         </div>
