@@ -3,7 +3,7 @@ import React from 'react'
 import { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import './index.scss'
 import throttle from './utils/throttle'
-
+import {calculateTextLines} from './utils/getTextLines'
 export interface WaterFallProps {
     cloumn?: number,
     gap?: number,
@@ -13,7 +13,7 @@ export interface WaterFallProps {
     pageSize?: number,
     request: (page: number, pageSize: number) => Promise<ICardItem[]>,
     // children:ReactNode
-    renderItem: (item: ICardItem, index: number) => ReactNode
+    renderItem: (item: ICardItem, index: number,postion:any) => ReactNode
 }
 
 
@@ -24,7 +24,7 @@ export interface ICardItem {
     width: number,
     height: number,
     url: string,
-
+    title:string,
     [key: string]: any
 }
 
@@ -34,7 +34,9 @@ export interface ICardPositon {
     x: number,
     y: number,
     width: number,
-    height: number
+    imageHeight:number,
+    totalHeight:number,
+    height?: number
 }
 
 
@@ -123,8 +125,10 @@ export const WaterFall = (props: WaterFallProps) => {
             }
         })
 
-        const newData = [...waterfallState.carList, ...data]
-        const { newPostion, newCloumnHeight } = computedCardPos(data, carWidth)
+        // const newData = [...waterfallState.carList, ...data]
+        //获取行数，由于加入padding，需要减少carWidth
+        const lines = calculateTextLinesS(data,carWidth - 20)
+        const { newPostion, newCloumnHeight } = computedCardPos(data, carWidth,lines)
         //获取数据，获取后端返回的数据
         setWaterfallState((prev) => {
             return {
@@ -136,11 +140,11 @@ export const WaterFall = (props: WaterFallProps) => {
                 cloumnHeight: newCloumnHeight
             }
         })
-
+        // calculateTextLinesS()
     }
 
     //根据请求的数据计算卡片位置
-    const computedCardPos = (list: ICardItem[], carWith: number) => {
+    const computedCardPos = (list: ICardItem[], carWith: number,lines:number[]) => {
         console.log(list, 'list');
         let newCloumnHeight = [...waterfallState.cloumnHeight]
 
@@ -161,33 +165,48 @@ export const WaterFall = (props: WaterFallProps) => {
                 //记录瀑布流每一列的高度
                 //vue 的写法： waterfallState.cloumnHeight[index] = cardHeight + gap
 
-                newCloumnHeight[index] = cardHeight + gap
+                newCloumnHeight[index] = cardHeight + gap + lines[index] * 19 + 8 + 20 + 20 //最后的20 是padding 的20
 
                 console.log(newCloumnHeight, 'newCloumnHeight');
-                // const postion = [...waterfallState.carPosition]
+               
+                //改造：
                 newPostion.push({
-                    width: carWith,
-                    // width:382,
-                    height: cardHeight,
-                    // x:index ? index * (waterfallState.carWith + gap) : 0,
-                    x: index ? index * (carWith + gap) : 0,
-                    y: 0
+                    width:carWith,
+                    imageHeight:cardHeight,
+                    totalHeight:cardHeight + lines[index] * 19 + 8 + 20 + 20,
+                    x:index ? index * (carWith + gap) : 0,
+                    y:0,
                 })
+                // newPostion.push({
+                //     width: carWith,
+                //     // width:382,
+                //     height: cardHeight,
+                //     x: index ? index * (carWith + gap) : 0,
+                //     y: 0
+                // })
                 console.log(newPostion, 'newPostion');
 
             } else {
 
                 const { minHeight, minIndex } = testMinColunmHeight(newCloumnHeight)
-                newCloumnHeight[minIndex] += cardHeight + gap
+                newCloumnHeight[minIndex] += cardHeight + gap + lines[index] * 19 + 8 + 20 + 20
                 console.log(minHeight, minIndex, newCloumnHeight, cardHeight, '2323sffwef');
 
+                // newPostion.push({
+                //     width: carWith,
+                //     height: cardHeight,
+                //     x: minIndex ? minIndex * (carWith + gap) : 0,
+                //     y: minHeight
+                // })
+
+                //加入title的：
                 newPostion.push({
                     width: carWith,
-                    height: cardHeight,
+                    imageHeight: cardHeight,
+                    totalHeight:cardHeight + lines[index] * 19 + 8 + 20 + 20,
                     x: minIndex ? minIndex * (carWith + gap) : 0,
                     y: minHeight
                 })
-
             }
         })
         return {
@@ -297,8 +316,17 @@ export const WaterFall = (props: WaterFallProps) => {
 
     },200)
 
+    const calculateTextLinesS = (data:ICardItem[],carWidth:number)=>{
+        const titles = data.map((item,index)=>item.title)
+        const res = calculateTextLines(titles,14,19,carWidth)
+        console.log(titles,res,'我最是傻狗');
+        
+        return res
+    }
+
     useEffect(() => {
         init()
+        
     }, [])
 
     // useEffect(()=>{
@@ -316,13 +344,14 @@ export const WaterFall = (props: WaterFallProps) => {
                     {waterfallState.carList.map((item,index)=>{
 
                         return (
-                          
-                            <div key={item.id} className="yu-waterfall-item" style={{width:`${waterfallState.carPosition[index]?.width}px`,height:`${waterfallState.carPosition[index]?.height}px`,transform: `translate3d(${waterfallState.carPosition[index]?.x}px, ${waterfallState.carPosition[index]?.y}px, 0)`}}>
-                                {renderItem(item,index)}
+                            <React.Fragment key={item.id} >
+                            <div className="yu-waterfall-item" style={{width:`${waterfallState.carPosition[index]?.width}px`,height:`${waterfallState.carPosition[index]?.totalHeight}px`,transform: `translate3d(${waterfallState.carPosition[index]?.x}px, ${waterfallState.carPosition[index]?.y}px, 0)`}}>
+                                {renderItem(item,index,waterfallState.carPosition[index])}
 
                                
                             </div>
-                        
+                            
+                            </React.Fragment>
                         )
                     })}
                     {waterfallState.loadingBottom && (

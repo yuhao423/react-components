@@ -25,5 +25,29 @@
         left: 0;
         top:0;
         box-sizing: border-box;
+
+
+        .footer{
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+
+            .title{
+                margin-bottom: 8px;
+            }
+            .author{
+                height: 20px;
+                display: flex;
+                justify-content: space-between;
+                .avatar{
+                    height: 20px;
+                    width: 20px;
+                    border-radius: 10px;
+                    background-color: aqua;
+                    margin-right: 8px;
+                }
+            }
+        }
     }
 }
