@@ -13,10 +13,11 @@ import { ICardItem, WaterFall } from './WaterFall';
 import data1 from './WaterFall/config/data1.json'
 import data2 from './WaterFall/config/data2.json'
 import { WaterFooter } from './WaterFall/Footer';
+import CityGreenLand from './EchartPie';
 
 function App() {
 
-  // const messageContext = useContext(ConfigContext)
+
 
   const colorArr = ["#409eff", "#67c23a", "#e6a23c", "#f56c6c", "#909399"];
 
@@ -94,24 +95,22 @@ function App() {
 
       {/* <VisturalList></VisturalList> */}
 
-      <WaterFall request={request} pageSize={10} cloumn={3} renderItem={(item,index,postion)=>{
-        // colorArr[index % (colorArr.length - 1)]
+      {/* <WaterFall request={request} pageSize={10} cloumn={3} renderItem={(item,index,postion)=>{
         console.log(item,postion);
-        
         return (
           <>
           <div style={{ background: '#f7f7f7', width: `${postion.width}px`, height: `${postion.imageHeight}px`, borderRadius: "10px" }} key={index}>
             {<>
               <img src={`https://picsum.photos/200/300?${index}`} style={{ width: `${postion.width}px`, height: `${postion.imageHeight}px`, borderRadius: '20px' }}></img>
-              {/* <div>{item.url}</div> */}
+            
             </>}
           </div>
-          {/* <div>{item.title}</div> */}
           <WaterFooter {...item}></WaterFooter>
           </>
          
         )
-      }}></WaterFall>
+      }}></WaterFall> */}
+      <CityGreenLand></CityGreenLand>
     </>
   );
 }
