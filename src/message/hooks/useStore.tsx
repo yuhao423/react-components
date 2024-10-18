@@ -76,7 +76,7 @@ export function useStore(defaultPostion:Postion = 'top' ){
 
     }
 
-
+    
     const remove = (id:number)=>{
         if(!id) return
 
