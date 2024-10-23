@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "noEmitOnError": false,
+    "skipDefaultLibCheck": true,
     "target": "es5",
     "lib": [
       "dom",
